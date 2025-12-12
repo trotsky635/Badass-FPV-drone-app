@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Badass FPV Drone Manager</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --color-bg-primary: #050509;
@@ -47,26 +44,39 @@
 
         /* Header */
         header {
-            background: linear-gradient(135deg, #1a0f1f 0%, #0a0812 100%);
+            background: linear-gradient(135deg, #1a1f3a 0%, #131829 100%), url('https://user-gen-media-assets.s3.amazonaws.com/gemini_images/9f2f98f3-fe55-462a-b344-88ff8ed4ece1.png') right center / 300px 200px no-repeat;
             border-bottom: 2px solid var(--color-accent);
             padding: 30px 20px;
             margin-bottom: 40px;
-            box-shadow: 0 0 20px rgba(255, 23, 68, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 217, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(5, 5, 9, 0.7), transparent);
+            pointer-events: none;
         }
 
         h1 {
             font-size: 2.2em;
             color: var(--color-accent);
-            text-shadow: 0 0 15px rgba(255, 23, 68, 0.6), 0 0 30px rgba(255, 23, 68, 0.3);
+            text-shadow: 0 0 15px rgba(0, 217, 255, 0.4), 0 0 30px rgba(0, 217, 255, 0.2);
             margin-bottom: 5px;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             font-weight: 900;
         }
 
         h2 {
             color: var(--color-accent);
             font-size: 1.8em;
-            text-shadow: 0 0 10px rgba(255, 23, 68, 0.4);
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
         }
 
         h3 {
@@ -108,7 +118,7 @@
             background-color: var(--color-accent);
             color: var(--color-bg-primary);
             font-weight: bold;
-            box-shadow: 0 0 15px rgba(255, 23, 68, 0.6);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
         }
 
         /* Main sections (hidden by default) */
@@ -140,7 +150,7 @@
 
         .drone-card:hover {
             border-color: var(--color-accent);
-            box-shadow: 0 0 20px rgba(255, 23, 68, 0.5);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
             transform: translateY(-5px);
         }
 
@@ -200,19 +210,19 @@
         }
 
         .status-ready {
-            background-color: rgba(0, 255, 154, 0.2);
+            background-color: rgba(0, 255, 65, 0.2);
             color: var(--color-status-ready);
             border: 1px solid var(--color-status-ready);
         }
 
         .status-in_build {
-            background-color: rgba(255, 224, 102, 0.2);
+            background-color: rgba(255, 215, 0, 0.2);
             color: var(--color-status-building);
             border: 1px solid var(--color-status-building);
         }
 
         .status-broken {
-            background-color: rgba(255, 64, 129, 0.2);
+            background-color: rgba(255, 68, 68, 0.2);
             color: var(--color-status-broken);
             border: 1px solid var(--color-status-broken);
         }
@@ -337,7 +347,7 @@
         .component-category {
             display: inline-block;
             padding: 4px 10px;
-            background-color: rgba(255, 23, 68, 0.2);
+            background-color: rgba(0, 217, 255, 0.2);
             color: var(--color-accent);
             border-radius: 3px;
             font-size: 0.85em;
@@ -389,14 +399,14 @@
         .back-btn:hover {
             background-color: var(--color-accent);
             color: var(--color-bg-primary);
-            box-shadow: 0 0 15px rgba(255, 23, 68, 0.6);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
             transform: translateX(-3px);
         }
 
         /* Action buttons */
         .action-btn {
             padding: 12px 24px;
-            background: linear-gradient(135deg, var(--color-accent), #ff4b6e);
+            background: linear-gradient(135deg, var(--color-accent), #00b8d4);
             color: var(--color-bg-primary);
             border: none;
             border-radius: 5px;
@@ -406,12 +416,12 @@
             transition: all 0.3s ease;
             text-transform: uppercase;
             letter-spacing: 1px;
-            box-shadow: 0 0 15px rgba(255, 23, 68, 0.4);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
         }
 
         .action-btn:hover {
-            background: linear-gradient(135deg, #ff4b6e, var(--color-accent));
-            box-shadow: 0 0 25px rgba(255, 23, 68, 0.7);
+            background: linear-gradient(135deg, #00b8d4, var(--color-accent));
+            box-shadow: 0 0 25px rgba(0, 217, 255, 0.6);
             transform: translateY(-2px);
         }
 
@@ -420,19 +430,19 @@
         }
 
         .danger-btn {
-            background: linear-gradient(135deg, #ff1744, #b3122a);
-            box-shadow: 0 0 15px rgba(255, 23, 68, 0.5);
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
         }
 
         .danger-btn:hover {
-            background: linear-gradient(135deg, #b3122a, #ff1744);
-            box-shadow: 0 0 25px rgba(255, 23, 68, 0.8);
+            background: linear-gradient(135deg, #cc0000, #ff4444);
+            box-shadow: 0 0 25px rgba(255, 68, 68, 0.6);
         }
 
         /* Header action buttons */
         .header-action-btn {
             padding: 8px 16px;
-            background-color: rgba(255, 23, 68, 0.15);
+            background-color: rgba(0, 217, 255, 0.15);
             color: var(--color-accent);
             border: 1px solid var(--color-accent);
             border-radius: 5px;
@@ -445,7 +455,7 @@
         .header-action-btn:hover {
             background-color: var(--color-accent);
             color: var(--color-bg-primary);
-            box-shadow: 0 0 15px rgba(255, 23, 68, 0.5);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
         }
 
         /* Form inputs */
@@ -471,8 +481,8 @@
         textarea:focus {
             outline: none;
             border-color: var(--color-accent);
-            box-shadow: 0 0 10px rgba(255, 23, 68, 0.4);
-            background-color: rgba(255, 23, 68, 0.08);
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+            background-color: rgba(0, 217, 255, 0.05);
         }
 
         /* Stats Dashboard */
@@ -563,7 +573,7 @@
                 <button class="action-btn" onclick="showPage('addDrone')">+ Add New Drone</button>
             </div>
             <div id="emptyState" style="text-align: center; padding: 60px 20px; color: var(--color-text-secondary);">
-                <div style="font-size: 3em; margin-bottom: 20px;">🚁</div>
+                <img src="https://user-gen-media-assets.s3.amazonaws.com/gemini_images/9f2f98f3-fe55-462a-b344-88ff8ed4ece1.png" alt="FPV Drone Icon" style="width: 150px; height: 150px; margin-bottom: 20px; opacity: 0.8; filter: drop-shadow(0 0 20px rgba(255, 23, 68, 0.4));">
                 <h3>No Drones Yet</h3>
                 <p>Click "Add New Drone" to get started with your first quad</p>
             </div>
@@ -621,10 +631,64 @@
             <div id="droneDetailContent"></div>
         </div>
 
+        <!-- Manage Data Page -->
+        <div id="manage" class="page">
+            <button class="back-btn" onclick="showPage('fleet')">← Back to Fleet</button>
+            <div class="section">
+                <h3>📊 Manage Your Data</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">💾 Backup</h4>
+                        <p>Download all your drone data as a JSON file. Keep it safe!</p>
+                        <button class="action-btn" onclick="downloadData()" style="width: 100%;">Download Backup</button>
+                    </div>
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">📤 Restore</h4>
+                        <p>Upload a previously saved backup to restore your data.</p>
+                        <button class="action-btn" onclick="document.getElementById('uploadInput').click()" style="width: 100%;">Choose File</button>
+                    </div>
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">🗑️ Clear All</h4>
+                        <p>WARNING: This permanently deletes all data. Cannot be undone!</p>
+                        <button class="action-btn danger-btn" onclick="if(confirm('Are you SURE? This deletes everything!')) { localStorage.clear(); location.reload(); }" style="width: 100%;">Clear Everything</button>
+                    </div>
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">ℹ️ Storage Info</h4>
+                        <p id="storageInfo">Checking...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Components Page -->
+        <div id="components" class="page">
+            <h2 style="margin-bottom: 25px; color: var(--color-accent);">📦 Component Inventory</h2>
+            <div class="filter-bar" id="categoryFilters"></div>
+            <table class="components-table" id="componentsTable">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Brand / Model</th>
+                        <th>Specs</th>
+                        <th>Status</th>
+                        <th>Installed On</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="componentsTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Stats Page -->
+        <div id="stats" class="page">
+            <h2 style="margin-bottom: 25px; color: var(--color-accent);">📊 Fleet Statistics</h2>
+            <div class="stats-grid" id="statsContainer"></div>
+        </div>
+
         <!-- Build Checker Page -->
         <div id="buildChecker" class="page">
             <h2 style="margin-bottom: 25px; color: var(--color-accent);">🧪 Build Checker</h2>
-            <p style="color: var(--color-text-secondary); margin-bottom: 30px;">Enter your drone components to check if it's a badass build. This is a rule-of-thumb advisor, not a physics simulator.</p>
+            <p style="color: var(--color-text-secondary); margin-bottom: 30px;">Enter your drone components to check if it's a badass build or will it actually fly. This is a rule-of-thumb advisor, not a physics simulator.</p>
             
             <div class="section">
                 <h3>Build Specification</h3>
@@ -678,31 +742,6 @@
             </div>
         </div>
 
-        <!-- Components Page -->
-        <div id="components" class="page">
-            <h2 style="margin-bottom: 25px; color: var(--color-accent);">📦 Component Inventory</h2>
-            <div class="filter-bar" id="categoryFilters"></div>
-            <table class="components-table" id="componentsTable">
-                <thead>
-                    <tr>
-                        <th>Category</th>
-                        <th>Brand / Model</th>
-                        <th>Specs</th>
-                        <th>Status</th>
-                        <th>Installed On</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody id="componentsTableBody"></tbody>
-            </table>
-        </div>
-
-        <!-- Stats Page -->
-        <div id="stats" class="page">
-            <h2 style="margin-bottom: 25px; color: var(--color-accent);">📊 Fleet Statistics</h2>
-            <div class="stats-grid" id="statsContainer"></div>
-        </div>
-
         <!-- Guide Page -->
         <div id="guide" class="page">
             <div class="section">
@@ -711,65 +750,30 @@
                     <h4 style="color: var(--color-accent); margin-top: 20px;">Getting Started</h4>
                     <p><strong>Step 1: Add Your First Drone</strong></p>
                     <ul style="margin-left: 20px;">
-                        <li>Click "🏠 Fleet" then "+ Add New Drone"</li>
-                        <li>Fill in drone name, nickname, size, and role</li>
+                        <li>Click the "<strong>+ Add New Drone</strong>" button on the Fleet page</li>
+                        <li>Type in your drone's name (like "My Freestyle Beast")</li>
+                        <li>Tell us what you use it for: Freestyle, Cinematic, Long Range, Racing, or Trainer</li>
+                        <li>Pick if it's "Ready to Fly" or "In Build"</li>
                         <li>Click "Save Drone"</li>
-                        <li>Done! Your drone appears on the main page</li>
+                        <li>Done! Your drone shows up on the main page</li>
                     </ul>
 
-                    <h4 style="color: var(--color-accent); margin-top: 25px;">Navigation Pages</h4>
-                    <p><strong>🏠 Fleet</strong> - View all your drones. Click any drone to see full details, edit, or delete.</p>
-                    <p><strong>🧪 Build Checker</strong> - Input motor KV, ESC rating, battery cells, props, and weight. Get instant feedback on whether your build is solid, marginal, or risky.</p>
-                    <p><strong>🔧 Parts</strong> - Inventory of all your components. Filter by type.</p>
-                    <p><strong>📊 Stats</strong> - Fleet overview (total drones, ready to fly, in build, etc.)</p>
-                    <p><strong>❓ Help</strong> - This page</p>
-
-                    <h4 style="color: var(--color-accent); margin-top: 25px;">Build Checker Tips</h4>
-                    <ul style="margin-left: 20px;">
-                        <li>Enter Motor KV, ESC amperage, battery cells, prop size, and frame size</li>
-                        <li>The checker estimates thrust-to-weight and flags incompatible components</li>
-                        <li>Results are guidance, not guarantees – use for sanity checks</li>
-                        <li>Freestyle typically needs 4-5:1 thrust-to-weight, racing 6+, cinematic 2-3</li>
-                    </ul>
+                    <h4 style="color: var(--color-accent); margin-top: 25px;">The Main Navigation Buttons</h4>
+                    <p><strong>🏠 Fleet</strong> - View all your drones. Click any to see full details.</p>
+                    <p><strong>🧪 Build Checker</strong> - Analyze drone specs for compatibility and performance.</p>
+                    <p><strong>🔧 Parts</strong> - Inventory of all your components.</p>
+                    <p><strong>📊 Stats</strong> - Fleet overview with counts.</p>
+                    <p><strong>❓ Help</strong> - This page!</p>
 
                     <h4 style="color: var(--color-accent); margin-top: 25px;">Data Backup (IMPORTANT!)</h4>
                     <ul style="margin-left: 20px;">
-                        <li>Click 💾 Backup once a week to download your data</li>
+                        <li>Click 💾 Backup weekly to download your data</li>
                         <li>Keep the file safe (Google Drive, OneDrive, USB)</li>
-                        <li>If something breaks, click 📤 Restore and upload the backup</li>
+                        <li>Click 📤 Restore to upload backup file if needed</li>
                     </ul>
 
                     <h4 style="color: var(--color-accent); margin-top: 25px;">Privacy</h4>
                     <p>All your data stays on YOUR device. Nothing goes to the internet. Your data is 100% private.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Manage Data Page -->
-        <div id="manage" class="page">
-            <button class="back-btn" onclick="showPage('fleet')">← Back to Fleet</button>
-            <div class="section">
-                <h3>📊 Manage Your Data</h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
-                        <h4 style="color: var(--color-accent); margin-top: 0;">💾 Backup</h4>
-                        <p>Download all your drone data as a JSON file. Keep it safe!</p>
-                        <button class="action-btn" onclick="downloadData()" style="width: 100%;">Download Backup</button>
-                    </div>
-                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
-                        <h4 style="color: var(--color-accent); margin-top: 0;">📤 Restore</h4>
-                        <p>Upload a previously saved backup to restore your data.</p>
-                        <button class="action-btn" onclick="document.getElementById('uploadInput').click()" style="width: 100%;">Choose File</button>
-                    </div>
-                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
-                        <h4 style="color: var(--color-accent); margin-top: 0;">🗑️ Clear All</h4>
-                        <p>WARNING: This permanently deletes all data. Cannot be undone!</p>
-                        <button class="action-btn danger-btn" onclick="if(confirm('Are you SURE? This deletes everything!')) { localStorage.clear(); location.reload(); }" style="width: 100%;">Clear Everything</button>
-                    </div>
-                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
-                        <h4 style="color: var(--color-accent); margin-top: 0;">ℹ️ Storage Info</h4>
-                        <p id="storageInfo">Checking...</p>
-                    </div>
                 </div>
             </div>
         </div>
@@ -871,7 +875,7 @@
 
                 card.innerHTML = `
                     <div class="drone-card-image">
-                        <img src="${drone.photo_url || 'image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%23101018%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23ff1744%22 font-size=%2240%22%3E🚁%3C/text%3E%3C/svg%3E'}" alt="${drone.name}" onerror="this.style.display='none';">
+                        <img src="${drone.photo_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%231a1f3a%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%2300d9ff%22 font-size=%2240%22%3E🚁%3C/text%3E%3C/svg%3E'}" alt="${drone.name}" onerror="this.style.display='none';">
                     </div>
                     <div class="drone-card-body">
                         <div class="drone-card-name">${drone.name}</div>
@@ -1154,8 +1158,6 @@
             let warnings = [];
             let verdict = '✅ FLYABLE';
             let verdictColor = '#00ff9a';
-            let advice = [];
-            let style = '';
 
             // KV / Cell compatibility check
             const kvByCell = {
@@ -1170,7 +1172,7 @@
                 verdictColor = '#ffe066';
             }
 
-            // ESC amp rating vs motor current draw (rough estimate)
+            // ESC amp rating vs motor current draw
             const voltage = batteryCells * 3.7;
             const estimatedPeakCurrent = (motorKv * voltage / 1000) * 1.3 * motorCount / 4;
             
@@ -1211,7 +1213,6 @@
             if (warnings.length === 0) {
                 verdict = '✅ SOLID BUILD';
                 verdictColor = '#00ff9a';
-                advice.push('All key components match well.');
             } else if (warnings.length === 1 && verdict === '✅ FLYABLE') {
                 verdict = '✅ MOSTLY GOOD';
                 verdictColor = '#00ff9a';
