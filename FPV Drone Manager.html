@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badass FPV Drone Manager</title>
+    <style>
+        :root {
+            --color-bg-primary: #0a0e27;
+            --color-bg-secondary: #131829;
+            --color-bg-tertiary: #1a1f3a;
+            --color-text-primary: #e0e6ff;
+            --color-text-secondary: #a0a8cc;
+            --color-accent: #00d9ff;
+            --color-accent-hover: #00b8d4;
+            --color-status-ready: #00ff41;
+            --color-status-building: #ffd700;
+            --color-status-broken: #ff4444;
+            --color-status-retired: #666666;
+            --color-border: #2a2f4a;
+            --color-crash-minor: #ffaa00;
+            --color-crash-severe: #ff4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #1a1f3a 0%, #131829 100%);
+            border-bottom: 2px solid var(--color-accent);
+            padding: 30px 20px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 15px rgba(0, 217, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.2em;
+            color: var(--color-accent);
+            text-shadow: 0 0 15px rgba(0, 217, 255, 0.4), 0 0 30px rgba(0, 217, 255, 0.2);
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            font-weight: 900;
+        }
+
+        h2 {
+            color: var(--color-accent);
+            font-size: 1.8em;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+        }
+
+        h3 {
+            color: var(--color-accent);
+            font-size: 1.5em;
+        }
+
+        h4 {
+            color: var(--color-accent);
+            font-size: 1.1em;
+        }
+
+        .header-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.95em;
+        }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        nav button {
+            padding: 10px 20px;
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-accent);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        nav button:hover,
+        nav button.active {
+            background-color: var(--color-accent);
+            color: var(--color-bg-primary);
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
+        }
+
+        /* Main sections (hidden by default) */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Fleet Overview Grid */
+        .fleet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .drone-card {
+            background: var(--color-bg-secondary);
+            border: 2px solid var(--color-border);
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .drone-card:hover {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.3);
+            transform: translateY(-5px);
+        }
+
+        .drone-card-image {
+            width: 100%;
+            height: 180px;
+            background-color: var(--color-bg-tertiary);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+        }
+
+        .drone-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .drone-card-body {
+            padding: 20px;
+        }
+
+        .drone-card-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--color-accent);
+            margin-bottom: 5px;
+        }
+
+        .drone-card-nickname {
+            font-size: 0.85em;
+            color: var(--color-text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .drone-card-specs {
+            font-size: 0.9em;
+            color: var(--color-text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .drone-card-specs strong {
+            color: var(--color-text-primary);
+        }
+
+        .drone-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+
+        .status-ready {
+            background-color: rgba(0, 255, 65, 0.2);
+            color: var(--color-status-ready);
+            border: 1px solid var(--color-status-ready);
+        }
+
+        .status-in_build {
+            background-color: rgba(255, 215, 0, 0.2);
+            color: var(--color-status-building);
+            border: 1px solid var(--color-status-building);
+        }
+
+        .status-broken {
+            background-color: rgba(255, 68, 68, 0.2);
+            color: var(--color-status-broken);
+            border: 1px solid var(--color-status-broken);
+        }
+
+        .status-retired {
+            background-color: rgba(100, 100, 100, 0.2);
+            color: var(--color-status-retired);
+            border: 1px solid var(--color-status-retired);
+        }
+
+        /* Drone Detail Page */
+        .detail-header {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .detail-image {
+            flex: 0 0 300px;
+            height: 300px;
+            background-color: var(--color-bg-secondary);
+            border: 2px solid var(--color-accent);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 6em;
+        }
+
+        .detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .detail-info {
+            flex: 1;
+        }
+
+        .detail-info h2 {
+            font-size: 2em;
+            color: var(--color-accent);
+            margin-bottom: 10px;
+        }
+
+        .detail-info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .detail-info-item {
+            background-color: var(--color-bg-tertiary);
+            padding: 12px 15px;
+            border-radius: 5px;
+            border-left: 3px solid var(--color-accent);
+        }
+
+        .detail-info-label {
+            font-size: 0.8em;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .detail-info-value {
+            font-size: 1.1em;
+            color: var(--color-text-primary);
+        }
+
+        /* Sections */
+        .section {
+            background-color: var(--color-bg-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .section h3 {
+            font-size: 1.5em;
+            color: var(--color-accent);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--color-accent);
+            padding-bottom: 10px;
+        }
+
+        /* Betaflight Config Section */
+        .config-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .config-box {
+            background-color: var(--color-bg-tertiary);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid var(--color-accent);
+        }
+
+        .config-label {
+            font-size: 0.75em;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .config-value {
+            font-size: 1.2em;
+            color: var(--color-accent);
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .config-subtext {
+            font-size: 0.85em;
+            color: var(--color-text-secondary);
+            margin-top: 5px;
+        }
+
+        .cli-diff {
+            background-color: var(--color-bg-tertiary);
+            border: 1px solid var(--color-border);
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #00ff41;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .cli-diff-label {
+            font-size: 0.85em;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Maintenance Log */
+        .maintenance-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .maintenance-item {
+            background-color: var(--color-bg-tertiary);
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 3px solid var(--color-text-secondary);
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .maintenance-item.crashed {
+            border-left-color: var(--color-crash-minor);
+        }
+
+        .maintenance-item.crashed.severe {
+            border-left-color: var(--color-crash-severe);
+            background-color: rgba(255, 68, 68, 0.1);
+        }
+
+        .maintenance-date {
+            font-size: 0.85em;
+            color: var(--color-accent);
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .maintenance-session {
+            font-size: 0.9em;
+            color: var(--color-text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .maintenance-detail {
+            font-size: 0.95em;
+            color: var(--color-text-primary);
+            line-height: 1.5;
+            margin-top: 8px;
+        }
+
+        .crash-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 3px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-right: 8px;
+            text-transform: uppercase;
+        }
+
+        .crash-badge.minor {
+            background-color: rgba(255, 170, 0, 0.3);
+            color: var(--color-crash-minor);
+        }
+
+        .crash-badge.severe {
+            background-color: rgba(255, 68, 68, 0.3);
+            color: var(--color-crash-severe);
+        }
+
+        /* Components Table */
+        .components-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .components-table thead {
+            background-color: var(--color-bg-tertiary);
+        }
+
+        .components-table th {
+            padding: 12px;
+            text-align: left;
+            color: var(--color-accent);
+            font-weight: bold;
+            border-bottom: 2px solid var(--color-accent);
+        }
+
+        .components-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--color-border);
+            color: var(--color-text-primary);
+        }
+
+        .components-table tr:hover {
+            background-color: var(--color-bg-tertiary);
+        }
+
+        .component-category {
+            display: inline-block;
+            padding: 4px 10px;
+            background-color: rgba(0, 217, 255, 0.2);
+            color: var(--color-accent);
+            border-radius: 3px;
+            font-size: 0.85em;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Filters */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background-color: var(--color-accent);
+            color: var(--color-bg-primary);
+            border-color: var(--color-accent);
+        }
+
+        /* Back button */
+        .back-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-accent);
+            border: 2px solid var(--color-accent);
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .back-btn:hover {
+            background-color: var(--color-accent);
+            color: var(--color-bg-primary);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+            transform: translateX(-3px);
+        }
+
+        /* Action buttons */
+        .action-btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--color-accent), #00b8d4);
+            color: var(--color-bg-primary);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.3);
+        }
+
+        .action-btn:hover {
+            background: linear-gradient(135deg, #00b8d4, var(--color-accent));
+            box-shadow: 0 0 25px rgba(0, 217, 255, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+
+        .danger-btn {
+            background: linear-gradient(135deg, #ff4444, #cc0000);
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+        }
+
+        .danger-btn:hover {
+            background: linear-gradient(135deg, #cc0000, #ff4444);
+            box-shadow: 0 0 25px rgba(255, 68, 68, 0.6);
+        }
+
+        /* Header action buttons */
+        .header-action-btn {
+            padding: 8px 16px;
+            background-color: rgba(0, 217, 255, 0.15);
+            color: var(--color-accent);
+            border: 1px solid var(--color-accent);
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .header-action-btn:hover {
+            background-color: var(--color-accent);
+            color: var(--color-bg-primary);
+            box-shadow: 0 0 15px rgba(0, 217, 255, 0.4);
+        }
+
+        /* Form inputs */
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        select,
+        textarea {
+            background-color: var(--color-bg-tertiary);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+            padding: 12px;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="email"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 10px rgba(0, 217, 255, 0.3);
+            background-color: rgba(0, 217, 255, 0.05);
+        }
+
+        /* Stats Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            color: var(--color-accent);
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .detail-header {
+                flex-direction: column;
+            }
+
+            .detail-image {
+                flex: 1 1 100%;
+            }
+
+            .detail-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fleet-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .section h3 {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+                <h1>🚁 DRONE COMMAND CENTER</h1>
+                <p class="header-subtitle">Ultimate FPV Fleet Management</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="header-action-btn" onclick="showPage('manage')" title="Manage Your Data">⚙️ Manage</button>
+                <button class="header-action-btn" onclick="downloadData()" title="Download Backup">💾 Backup</button>
+                <button class="header-action-btn" onclick="document.getElementById('uploadInput').click()" title="Upload Backup">📤 Restore</button>
+                <input type="file" id="uploadInput" style="display:none;" accept=".json" onchange="uploadData(event)">
+            </div>
+        </div>
+        <nav>
+            <button onclick="showPage('fleet')" class="nav-btn active" data-page="fleet">🏠 Fleet</button>
+            <button onclick="showPage('components')" class="nav-btn" data-page="components">🔧 Parts</button>
+            <button onclick="showPage('stats')" class="nav-btn" data-page="stats">📊 Stats</button>
+            <button onclick="showPage('guide')" class="nav-btn" data-page="guide">❓ Help</button>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Fleet Overview Page -->
+        <div id="fleet" class="page active">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                <h2 style="color: var(--color-accent); margin: 0;">Your FPV Fleet</h2>
+                <button class="action-btn" onclick="showPage('addDrone')">+ Add New Drone</button>
+            </div>
+            <div id="emptyState" style="text-align: center; padding: 60px 20px; color: var(--color-text-secondary);">
+                <div style="font-size: 3em; margin-bottom: 20px;">🚁</div>
+                <h3>No Drones Yet</h3>
+                <p>Click "Add New Drone" to get started with your first quad</p>
+            </div>
+            <div class="fleet-grid" id="droneCardsContainer"></div>
+        </div>
+
+        <!-- Add Drone Page -->
+        <div id="addDrone" class="page">
+            <button class="back-btn" onclick="showPage('fleet')">← Back to Fleet</button>
+            <div class="section">
+                <h3>Add New Drone</h3>
+                <form id="droneForm" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                    <input type="text" placeholder="Drone Name" id="name" required style="grid-column: 1 / -1;">
+                    <input type="text" placeholder="Nickname (e.g. FB-5)" id="nickname" required>
+                    <input type="text" placeholder="Size (5\", 3.5\", etc)" id="size" required>
+                    <select id="main_role" required style="grid-column: 1 / -1;">
+                        <option value="">Select Role</option>
+                        <option value="freestyle">Freestyle</option>
+                        <option value="cine">Cinematic</option>
+                        <option value="long-range">Long Range</option>
+                        <option value="racing">Racing</option>
+                        <option value="trainer">Trainer</option>
+                    </select>
+                    <input type="text" placeholder="Frame Model" id="frame_model">
+                    <input type="text" placeholder="Flight Controller" id="fc_brand_model">
+                    <input type="text" placeholder="ESC Model" id="esc_brand_model">
+                    <input type="number" placeholder="ESC Amperage" id="esc_amperage">
+                    <input type="text" placeholder="Motor Brand/Model" id="motor_brand_model">
+                    <input type="number" placeholder="Motor KV" id="motor_kv">
+                    <input type="text" placeholder="Prop Size (5.1\")" id="prop_size">
+                    <input type="text" placeholder="Prop Pitch (2.6)" id="prop_pitch">
+                    <input type="text" placeholder="VTX System (Analog/Digital)" id="vtx_system">
+                    <input type="text" placeholder="VTX Model" id="vtx_model">
+                    <input type="text" placeholder="Receiver Protocol (SBUS)" id="receiver_protocol">
+                    <input type="text" placeholder="Receiver Model" id="receiver_model">
+                    <input type="text" placeholder="Betaflight Version" id="betaflight_version">
+                    <input type="text" placeholder="Battery Cells (4S)" id="battery_cells">
+                    <input type="number" placeholder="Battery Capacity (mAh)" id="battery_capacity_mah">
+                    <input type="number" placeholder="AUW (grams)" id="auw_grams">
+                    <select id="status" required style="grid-column: 1 / -1;">
+                        <option value="ready">Ready to Fly</option>
+                        <option value="in_build">In Build</option>
+                        <option value="broken">Broken</option>
+                        <option value="retired">Retired</option>
+                    </select>
+                    <input type="text" placeholder="Photo URL (optional)" id="photo_url" style="grid-column: 1 / -1;">
+                    <button type="submit" class="action-btn" style="grid-column: 1 / -1;">Save Drone</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Drone Detail Page -->
+        <div id="droneDetail" class="page">
+            <button class="back-btn" onclick="showPage('fleet')">← Back to Fleet</button>
+            <div id="droneDetailContent"></div>
+        </div>
+
+        <!-- Manage Data Page -->
+        <div id="manage" class="page">
+            <button class="back-btn" onclick="showPage('fleet')">← Back to Fleet</button>
+            <div class="section">
+                <h3>📊 Manage Your Data</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">💾 Backup</h4>
+                        <p>Download all your drone data as a JSON file. Keep it safe!</p>
+                        <button class="action-btn" onclick="downloadData()" style="width: 100%;">Download Backup</button>
+                    </div>
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">📤 Restore</h4>
+                        <p>Upload a previously saved backup to restore your data.</p>
+                        <button class="action-btn" onclick="document.getElementById('uploadInput').click()" style="width: 100%;">Choose File</button>
+                    </div>
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">🗑️ Clear All</h4>
+                        <p>WARNING: This permanently deletes all data. Cannot be undone!</p>
+                        <button class="action-btn danger-btn" onclick="if(confirm('Are you SURE? This deletes everything!')) { localStorage.clear(); location.reload(); }" style="width: 100%;">Clear Everything</button>
+                    </div>
+                    <div style="background: var(--color-bg-tertiary); padding: 20px; border-radius: 8px;">
+                        <h4 style="color: var(--color-accent); margin-top: 0;">ℹ️ Storage Info</h4>
+                        <p id="storageInfo">Checking...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Components Page -->
+        <div id="components" class="page">
+            <h2 style="margin-bottom: 25px; color: var(--color-accent);">📦 Component Inventory</h2>
+            <div class="filter-bar" id="categoryFilters"></div>
+            <table class="components-table" id="componentsTable">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Brand / Model</th>
+                        <th>Specs</th>
+                        <th>Status</th>
+                        <th>Installed On</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody id="componentsTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Stats Page -->
+        <div id="stats" class="page">
+            <h2 style="margin-bottom: 25px; color: var(--color-accent);">📊 Fleet Statistics</h2>
+            <div class="stats-grid" id="statsContainer"></div>
+        </div>
+
+        <!-- Guide Page -->
+        <div id="guide" class="page">
+            <div class="section">
+                <h3>❓ QUICK START - 3 Steps</h3>
+                <div style="color: var(--color-text-secondary); line-height: 1.8;">
+                    
+                    <h4 style="color: #00ff41; margin-top: 20px; font-size: 1.3em;">✅ STEP 1: SAVE THIS FILE</h4>
+                    <p style="background: rgba(0,255,65,0.1); padding: 15px; border-left: 3px solid #00ff41; border-radius: 5px;">
+                        <strong>Right-click on this page → "Save As" → Save as "fpv-drone-manager.html"</strong><br>
+                        Pick any folder on your computer (Desktop is easy).<br>
+                        <em>That's it! You now have the app forever. It works offline!</em>
+                    </p>
+
+                    <h4 style="color: #00ff41; margin-top: 25px; font-size: 1.3em;">✅ STEP 2: ADD YOUR FIRST DRONE</h4>
+                    <p>Click the <strong>"+ Add New Drone"</strong> button (you see it above ☝️)</p>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Drone Name:</strong> "My Freestyle Beast" or "Cine Queen" (whatever you like)</li>
+                        <li><strong>Nickname:</strong> "FB-5" or short code you'll remember</li>
+                        <li><strong>Size:</strong> "5 inch" or "3.5 inch" etc</li>
+                        <li><strong>Role:</strong> Pick one (Freestyle, Cinematic, Racing, etc.)</li>
+                        <li><strong>Status:</strong> "Ready to Fly" or "In Build"</li>
+                        <li>Leave other fields blank if you don't know them (add later)</li>
+                        <li>Click <strong>"Save Drone"</strong> ✅</li>
+                    </ul>
+
+                    <h4 style="color: #00ff41; margin-top: 25px; font-size: 1.3em;">✅ STEP 3: BACKUP YOUR DATA WEEKLY</h4>
+                    <p style="background: rgba(255,215,0,0.1); padding: 15px; border-left: 3px solid #ffd700; border-radius: 5px;">
+                        <strong>Click the 💾 Backup button at the top right</strong><br>
+                        A file downloads. Save it to Google Drive or your computer.<br>
+                        Do this every week = your data is NEVER lost.
+                    </p>
+
+                    <h4 style="color: var(--color-accent); margin-top: 30px;">Getting Started</h4>
+                    <p><strong>Step 1: Add Your First Drone</strong></p>
+                    <ul style="margin-left: 20px;">
+                        <li>Click the "<strong>+ Add New Drone</strong>" button on the Fleet page</li>
+                        <li>Type in your drone's name (like "My Freestyle Beast")</li>
+                        <li>Tell us what you use it for: Freestyle, Cinematic, Long Range, Racing, or Trainer</li>
+                        <li>Pick if it's "Ready to Fly" or "In Build"</li>
+                        <li>Click "Save Drone"</li>
+                        <li>Done! Your drone shows up on the main page</li>
+                    </ul>
+
+                    <h4 style="color: var(--color-accent); margin-top: 25px;">The Main Navigation Buttons</h4>
+                    <p><strong>🏠 Fleet</strong><br>
+                    This is your home page. You see all your drones as big cards. Click any card to see everything about that drone.</p>
+
+                    <p><strong>🔧 Parts</strong><br>
+                    A list of all your motors, batteries, ESCs, props, etc. You can filter by type (just motors, just batteries, etc.)</p>
+
+                    <p><strong>📊 Stats</strong><br>
+                    Shows you numbers about your fleet. Like: "You have 3 drones, 2 are ready to fly, 1 is in build"</p>
+
+                    <p><strong>❓ Help</strong><br>
+                    This page! How to use the app.</p>
+
+                    <h4 style="color: var(--color-accent); margin-top: 25px;">The Top Right Buttons</h4>
+                    <p><strong>⚙️ Manage</strong><br>
+                    Click here to download a backup, upload a backup, or clear everything. Super important!</p>
+
+                    <p><strong>💾 Backup</strong><br>
+                    Saves all your drone info to a file. Download it and keep it safe!</p>
+
+                    <p><strong>📤 Restore</strong><br>
+                    Upload a backup file to get all your data back.</p>
+
+                    <h4 style="color: var(--color-accent); margin-top: 25px;">Saving Your Data (REALLY IMPORTANT!)</h4>
+                    <p>All your data is saved in your browser. If you clear your browser data, it's gone. So...</p>
+                    <ul style="margin-left: 20px;">
+                        <li>Click "<strong>Backup</strong>" once a week</li>
+                        <li>A file downloads - save it to your computer</li>
+                        <li>Keep it safe (OneDrive, Google Drive, USB drive, whatever)</li>
+                        <li>If something breaks, click "Restore" and upload that file</li>
+                    </ul>
+
+                    <h4 style="color: var(--color-accent); margin-top: 25px;">Tips for New Users</h4>
+                    <ul style="margin-left: 20px;">
+                        <li><strong>Start simple</strong> - Just add drone name, role, and status. You can add more details later.</li>
+                        <li><strong>Use easy names</strong> - "Freestyle Beast", "Cine Queen" are better than "Quad 1" and "Quad 2"</li>
+                        <li><strong>Add photos</strong> - Go to imgur.com, upload a drone photo, copy the link, paste it when adding a drone</li>
+                        <li><strong>Backup often</strong> - Click Backup every week. Seriously.</li>
+                        <li><strong>Don't panic</strong> - Nothing gets deleted unless you click the red "Clear Everything" button</li>
+                    </ul>
+
+                    <h4 style="color: var(--color-accent); margin-top: 25px;">What Data Gets Saved?</h4>
+                    <p>Everything you add stays on YOUR computer. The app doesn't send anything to the internet. Your data is private.</p>
+                    <ul style="margin-left: 20px;">
+                        <li>Drone names, specs, photos</li>
+                        <li>Flight history (crashes, maintenance, etc.)</li>
+                        <li>Parts inventory</li>
+                        <li>Betaflight configs (if you add them)</li>
+                    </ul>
+
+                    <h4 style="color: var(--color-accent); margin-top: 25px;">Confused? Try This</h4>
+                    <p>Just start clicking buttons and adding drones. You'll figure it out. The app won't break. And if you mess up, you can always restore from your backup!</p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load from localStorage on startup
+        let dronesData = localStorage.getItem('dronesData') || '';
+        let betaflightConfigData = localStorage.getItem('betaflightConfigData') || '';
+        let maintenanceLogData = localStorage.getItem('maintenanceLogData') || '';
+        let componentsData = localStorage.getItem('componentsData') || '';
+
+        // CSV PARSER
+        function parseCSV(csvText) {
+            if (!csvText.trim()) return [];
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim());
+            const data = [];
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+
+                const obj = {};
+                let inQuotes = false;
+                let field = '';
+                let fieldIndex = 0;
+
+                for (let j = 0; j < line.length; j++) {
+                    const char = line[j];
+
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        obj[headers[fieldIndex]] = field.trim().replace(/^"|"$/g, '');
+                        field = '';
+                        fieldIndex++;
+                    } else {
+                        field += char;
+                    }
+                }
+
+                if (fieldIndex < headers.length) {
+                    obj[headers[fieldIndex]] = field.trim().replace(/^"|"$/g, '');
+                }
+
+                data.push(obj);
+            }
+
+            return data;
+        }
+
+        let drones = parseCSV(dronesData);
+        let betaflightConfigs = parseCSV(betaflightConfigData);
+        let maintenanceLogs = parseCSV(maintenanceLogData);
+        let components = parseCSV(componentsData);
+
+        // PAGE NAVIGATION
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            const page = document.getElementById(pageName);
+            if (page) page.classList.add('active');
+
+            const btn = document.querySelector(`[data-page="${pageName}"]`);
+            if (btn) btn.classList.add('active');
+
+            if (pageName === 'fleet') renderFleetCards();
+            if (pageName === 'components') renderComponents();
+            if (pageName === 'stats') renderStats();
+        }
+
+        // FLEET OVERVIEW
+        function renderFleetCards() {
+            const container = document.getElementById('droneCardsContainer');
+            container.innerHTML = '';
+
+            if (drones.length === 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                container.style.display = 'none';
+                return;
+            }
+
+            document.getElementById('emptyState').style.display = 'none';
+            container.style.display = 'grid';
+
+            drones.forEach(drone => {
+                const card = document.createElement('div');
+                card.className = 'drone-card';
+                card.onclick = () => showDroneDetail(drone.id);
+
+                card.innerHTML = `
+                    <div class="drone-card-image">
+                        <img src="${drone.photo_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Crect fill=%22%231a1f3a%22 width=%22100%22 height=%22100%22/%3E%3Ctext x=%2250%22 y=%2250%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%2300d9ff%22 font-size=%2240%22%3E🚁%3C/text%3E%3C/svg%3E'}" alt="${drone.name}" onerror="this.style.display='none';">
+                    </div>
+                    <div class="drone-card-body">
+                        <div class="drone-card-name">${drone.name}</div>
+                        <div class="drone-card-nickname">${drone.nickname}</div>
+                        <div class="drone-card-specs">
+                            <strong>Size:</strong> ${drone.size}<br>
+                            <strong>Role:</strong> ${drone.main_role}<br>
+                            <strong>Battery:</strong> ${drone.battery_cells} ${drone.battery_capacity_mah}mAh
+                        </div>
+                        <div class="drone-status status-${drone.status}">
+                            ${drone.status.replace(/_/g, ' ')}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // DRONE DETAIL VIEW
+        function showDroneDetail(droneId) {
+            const drone = drones.find(d => d.id === droneId.toString());
+            if (!drone) return;
+
+            const configs = betaflightConfigs.filter(c => c.drone_id === droneId.toString());
+            const logs = maintenanceLogs.filter(m => m.drone_id === droneId.toString()).reverse();
+            const droneComponents = components.filter(c => c.installed_on_drone_id === droneId.toString());
+
+            let html = `
+                <div class="detail-header">
+                    <div class="detail-image">
+                        <img src="${drone.photo_url}" alt="${drone.name}" onerror="this.style.display='none';">
+                    </div>
+                    <div class="detail-info">
+                        <h2>${drone.name}</h2>
+                        <div class="drone-status status-${drone.status}">
+                            ${drone.status.replace(/_/g, ' ')}
+                        </div>
+                        <div class="detail-info-grid">
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Nickname</div>
+                                <div class="detail-info-value">${drone.nickname || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Size</div>
+                                <div class="detail-info-value">${drone.size || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Main Role</div>
+                                <div class="detail-info-value">${drone.main_role || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Frame</div>
+                                <div class="detail-info-value">${drone.frame_model || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Flight Controller</div>
+                                <div class="detail-info-value">${drone.fc_brand_model || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">ESC</div>
+                                <div class="detail-info-value">${drone.esc_brand_model || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Motors</div>
+                                <div class="detail-info-value">${drone.motor_brand_model || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Motor KV</div>
+                                <div class="detail-info-value">${drone.motor_kv || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Props</div>
+                                <div class="detail-info-value">${drone.prop_size || '—'} x ${drone.prop_pitch || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">VTX</div>
+                                <div class="detail-info-value">${drone.vtx_system || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Receiver</div>
+                                <div class="detail-info-value">${drone.receiver_protocol || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Betaflight</div>
+                                <div class="detail-info-value">${drone.betaflight_version || '—'}</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">Battery</div>
+                                <div class="detail-info-value">${drone.battery_cells || '—'} ${drone.battery_capacity_mah || '—'}mAh</div>
+                            </div>
+                            <div class="detail-info-item">
+                                <div class="detail-info-label">AUW</div>
+                                <div class="detail-info-value">${drone.auw_grams || '—'}g</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (droneComponents.length > 0) {
+                html += `
+                    <div class="section">
+                        <h3>🔧 Installed Components</h3>
+                        <table class="components-table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Brand / Model</th>
+                                    <th>Specs</th>
+                                    <th>Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                droneComponents.forEach(comp => {
+                    html += `
+                        <tr>
+                            <td><span class="component-category">${comp.category}</span></td>
+                            <td>${comp.brand_model}</td>
+                            <td>${comp.key_specs}</td>
+                            <td>${comp.notes}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+            }
+
+            document.getElementById('droneDetail').classList.add('active');
+            document.getElementById('droneDetailContent').innerHTML = html;
+            window.scrollTo(0, 0);
+        }
+
+        // COMPONENTS PAGE
+        function renderComponents() {
+            const categories = [...new Set(components.map(c => c.category))];
+            const filterContainer = document.getElementById('categoryFilters');
+            filterContainer.innerHTML = `<button class="filter-btn active" onclick="filterComponents('all')">All Categories</button>`;
+
+            categories.sort().forEach(cat => {
+                filterContainer.innerHTML += `<button class="filter-btn" onclick="filterComponents('${cat}')">${cat}</button>`;
+            });
+
+            renderComponentsTable('all');
+        }
+
+        function filterComponents(category) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderComponentsTable(category);
+        }
+
+        function renderComponentsTable(category) {
+            const tbody = document.getElementById('componentsTableBody');
+            tbody.innerHTML = '';
+
+            let filtered = components;
+            if (category !== 'all') {
+                filtered = components.filter(c => c.category === category);
+            }
+
+            filtered.sort((a, b) => a.category.localeCompare(b.category)).forEach(comp => {
+                const droneForComp = comp.installed_on_drone_id ? drones.find(d => d.id === comp.installed_on_drone_id) : null;
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                    <td><span class="component-category">${comp.category}</span></td>
+                    <td>${comp.brand_model}</td>
+                    <td>${comp.key_specs}</td>
+                    <td>${comp.status}</td>
+                    <td>${droneForComp ? droneForComp.name : '—'}</td>
+                    <td>${comp.notes}</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // STATS PAGE
+        function renderStats() {
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = '';
+
+            const statCard = (label, value) => `
+                <div class="stat-card">
+                    <div class="stat-label">${label}</div>
+                    <div class="stat-value">${value}</div>
+                </div>
+            `;
+
+            const readyCount = drones.filter(d => d.status === 'ready').length;
+            const buildingCount = drones.filter(d => d.status === 'in_build').length;
+            const brokenCount = drones.filter(d => d.status === 'broken').length;
+
+            statsContainer.innerHTML = `
+                ${statCard('Total Drones', drones.length)}
+                ${statCard('Ready to Fly', readyCount)}
+                ${statCard('In Build', buildingCount)}
+                ${statCard('Broken / Retired', brokenCount)}
+                ${statCard('Components Total', components.length)}
+            `;
+        }
+
+        // SAVE & RESTORE DATA
+        function saveAllData() {
+            localStorage.setItem('dronesData', dronesData);
+            localStorage.setItem('betaflightConfigData', betaflightConfigData);
+            localStorage.setItem('maintenanceLogData', maintenanceLogData);
+            localStorage.setItem('componentsData', componentsData);
+        }
+
+        function downloadData() {
+            const backup = {
+                drones: dronesData,
+                betaflightConfig: betaflightConfigData,
+                maintenanceLog: maintenanceLogData,
+                components: componentsData,
+                timestamp: new Date().toISOString()
+            };
+            const json = JSON.stringify(backup, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fpv-backup-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function uploadData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    dronesData = backup.drones || '';
+                    betaflightConfigData = backup.betaflightConfig || '';
+                    maintenanceLogData = backup.maintenanceLog || '';
+                    componentsData = backup.components || '';
+                    saveAllData();
+                    alert('✅ Data restored successfully!');
+                    location.reload();
+                } catch (err) {
+                    alert('❌ Error reading file: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function updateStorageInfo() {
+            const d = parseCSV(dronesData);
+            const c = parseCSV(betaflightConfigData);
+            const l = parseCSV(maintenanceLogData);
+            const comp = parseCSV(componentsData);
+
+            document.getElementById('storageInfo').innerHTML = `
+                <strong>Drones:</strong> ${d.length} | 
+                <strong>Components:</strong> ${comp.length}
+            `;
+        }
+
+        // ADD DRONE FORM
+        document.getElementById('droneForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const newId = (parseCSV(dronesData).length + 1).toString();
+            const newDrone = [
+                newId,
+                document.getElementById('name').value,
+                document.getElementById('nickname').value,
+                document.getElementById('size').value,
+                document.getElementById('main_role').value,
+                document.getElementById('frame_model').value || '',
+                document.getElementById('fc_brand_model').value || '',
+                document.getElementById('esc_brand_model').value || '',
+                document.getElementById('esc_amperage').value || '',
+                document.getElementById('motor_brand_model').value || '',
+                document.getElementById('motor_kv').value || '',
+                '4',
+                document.getElementById('prop_size').value || '',
+                document.getElementById('prop_pitch').value || '',
+                document.getElementById('vtx_system').value || '',
+                document.getElementById('vtx_model').value || '',
+                document.getElementById('receiver_protocol').value || '',
+                document.getElementById('receiver_model').value || '',
+                document.getElementById('betaflight_version').value || '',
+                document.getElementById('battery_cells').value || '',
+                document.getElementById('battery_capacity_mah').value || '',
+                document.getElementById('auw_grams').value || '',
+                document.getElementById('status').value,
+                document.getElementById('photo_url').value || ''
+            ].join(',');
+
+            if (!dronesData) {
+                dronesData = 'id,name,nickname,size,main_role,frame_model,fc_brand_model,esc_brand_model,esc_amperage,motor_brand_model,motor_kv,motor_count,prop_size,prop_pitch,vtx_system,vtx_model,receiver_protocol,receiver_model,betaflight_version,battery_cells,battery_capacity_mah,auw_grams,status,photo_url\n';
+            }
+
+            dronesData += newDrone + '\n';
+            saveAllData();
+            drones = parseCSV(dronesData);
+            document.getElementById('droneForm').reset();
+            showPage('fleet');
+            renderFleetCards();
+            alert('✅ Drone added successfully!');
+        });
+
+        // INITIALIZE
+        drones = parseCSV(dronesData);
+        betaflightConfigs = parseCSV(betaflightConfigData);
+        maintenanceLogs = parseCSV(maintenanceLogData);
+        components = parseCSV(componentsData);
+
+        renderFleetCards();
+        updateStorageInfo();
+    </script>
+</body>
+</html>
